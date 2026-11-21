@@ -399,10 +399,10 @@ private fun createPanelContainer(
                 // 内容溢出容器（高度上报未跟上的边缘态）时，滑动先归面板内部滚动——
                 // 否则列表拦截触摸后，WebView 只能靠长按选字才能滚。自适应完好、
                 // 不溢出的面板维持原行为：滑动交给外层消息列表。
-                // 溢出判定含 scrollHeight > height：滑到底后仍保持归面板，避免列表
-                // 接管把整条消息滚出视口 → item 被销毁 → 面板休眠成浅色占位卡。
-                val overflowed = v.scrollHeight > v.height || v.scrollY > 0 ||
-                    v.canScrollVertically(1) || v.canScrollVertically(-1)
+                // 溢出判定：只要面板内容能滚（或已滚动），滑动就归面板内部——
+                // 滑到底后仍保持归面板（overScroll 回弹），避免列表接管把整条
+                // 消息滚出视口 → item 被销毁 → 面板休眠成浅色占位卡。
+                val overflowed = v.scrollY > 0 || v.canScrollVertically(1) || v.canScrollVertically(-1)
                 v.requestDisallowInterceptTouchEvent(overflowed)
             }
             false
