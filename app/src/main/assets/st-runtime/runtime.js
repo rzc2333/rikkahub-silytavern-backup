@@ -5088,26 +5088,18 @@ function installPanelMode() {
             report();
         } catch (_e) { /* noop */ }
     };
-    // [P0-2 修复] 高度稳定 6 次后从 1500ms 快轮询降为 2000ms 慢轮询常驻：
-    // ResizeObserver / MutationObserver / toggle / click 监听为主，慢轮询只做兜底——
-    // 卡脚本自管折叠（shadow DOM / 异步动画）等监听器未命中的场景，仍能修正高度，
-    // 避免 details 展开后容器高度停在旧值、把同卡后续内容顶出可视区。
+    // [P0-2 修复] 高度稳定 6 次后自动停止 1500ms 轮询（后续由 ResizeObserver / MutationObserver 驱动），消除静置状态下永久强制重排
     let stableReportTicks = 0;
-    let reportTimerId = null;
-    const startReportPolling = (intervalMs) => {
-        if (reportTimerId !== null) clearInterval(reportTimerId);
-        reportTimerId = setInterval(() => {
-            const prev = lastReportedHeight;
-            report();
-            if (lastReportedHeight > 48 && lastReportedHeight === prev) {
-                stableReportTicks++;
-                if (stableReportTicks >= 6 && intervalMs < 2000) startReportPolling(2000);
-            } else {
-                stableReportTicks = 0;
-            }
-        }, intervalMs);
-    };
-    startReportPolling(1500);
+    const reportInterval = setInterval(() => {
+        const prev = lastReportedHeight;
+        report();
+        if (lastReportedHeight > 48 && lastReportedHeight === prev) {
+            stableReportTicks++;
+            if (stableReportTicks >= 6) clearInterval(reportInterval);
+        } else {
+            stableReportTicks = 0;
+        }
+    }, 1500);
     setTimeout(report, 100);
     // Mvu stub：与 MagVarUpdate bundle 同形（getMvuData → getVariables / events 常量表）。
     // panel 模式不加载 MVU 引擎，但面板脚本（魔法少女状态栏等）会直接引用 Mvu.*
