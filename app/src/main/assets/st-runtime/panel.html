@@ -23,13 +23,13 @@
            AI 输出的状态栏/剧情常是「纯文本行 + 少量标签」，标准 HTML 会把
            单个换行折叠成空格，导致整卡挤成一行；pre-wrap 让换行正常显形。 */
         #rikka-panel-root { width: 100%; overflow-x: hidden; white-space: pre-wrap; }
-        /* 面板常见的暗色场景默认色（面板自身 CSS 会覆盖） */
-        body { color: #e6e6e6; }
+        /* 面板默认文字色：深色（浅色主题下清晰可读；深色主题由 --rikka-fg 覆盖） */
+        body { color: #1b1b1b; }
         /* T2 (batch11 / bug D)：面板默认前景色跟随 App 主题。
        MessageHtmlBlock 在挂载 HTML 前注入 --rikka-fg（取 Compose 的 onSurface）；
-       未注入时回退到原暗色默认值。放在样式表末尾，靠层叠顺序覆盖上面的写死值。 */
+       未注入时回退深色文字（浅色主题下清晰可读）。放在样式表末尾，靠层叠顺序覆盖上面的写死值。 */
     body {
-      color: var(--rikka-fg, #e6e6e6);
+      color: var(--rikka-fg, #1b1b1b);
       color-scheme: light dark;
     }
   </style>

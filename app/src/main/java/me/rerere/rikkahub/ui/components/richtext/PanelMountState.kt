@@ -348,7 +348,6 @@ internal class PanelMountState {
         if (!pageReady) return
         val fg = pendingForeground
         if (fg != null && fg != appliedForeground) {
-            appliedForeground = fg
             wv.evaluateJavascript(
                 "document.documentElement.style.setProperty('--rikka-fg'," + JSONObject.quote(fg) + ");",
                 null,
