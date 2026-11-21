@@ -15,7 +15,10 @@ private const val POOL_TAG = "PanelPool"
 
 /** 活跃面板 WebView 的 LRU 名额，超出即淘汰最久未用的一张。 */
 internal object ActivePanelWebViewPool {
-    const val MAX_ACTIVE_PANEL_WEBVIEWS = 16
+    // fork：16 → 32。长对话里每条 AI 消息 1~2 个面板，浏览到后面最早的会被 LRU
+    // 淘汰成占位卡（用户看到「面板突然变浅色、滑不动」）。翻倍后正常浏览深度
+    // 很难再触达上限；被淘汰的也仍可点击占位卡立即唤醒。
+    const val MAX_ACTIVE_PANEL_WEBVIEWS = 32
 
     private val lock = Any()
     private val lruKeys = LinkedHashSet<String>()
