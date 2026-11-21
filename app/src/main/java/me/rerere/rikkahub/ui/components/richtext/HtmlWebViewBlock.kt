@@ -53,6 +53,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -109,8 +110,15 @@ fun HtmlWebViewBlock(
     val panelKey = remember(messageKey, contentHash) {
         if (messageKey.isNotBlank()) messageKey else "panel#" + contentHash
     }
-    val foregroundHex = remember(colorScheme.onSurface) {
-        String.format(Locale.US, "#%06X", 0xFFFFFF and colorScheme.onSurface.toArgb())
+    // 面板背景透明、透出 App 界面底色：文字颜色按底色亮度取深/浅——
+    // 浅色主题→深色文字、深色主题→浅色文字，任何主题下都清晰可读。
+    val foregroundHex = remember(colorScheme.surface) {
+        val fgInt = if (colorScheme.surface.luminance() > 0.5f) {
+            0xFF1B1B1B.toInt()
+        } else {
+            0xFFE6E6E6.toInt()
+        }
+        String.format(Locale.US, "#%06X", 0xFFFFFF and fgInt)
     }
 
     val mountState = remember(panelKey) {
@@ -150,6 +158,9 @@ fun HtmlWebViewBlock(
     }
     DisposableEffect(panelKey) {
         onDispose {
+            // 诊断：面板离开组合（消息滚出视口被销毁等）时记录，配合 [panel] hibernate
+            // 日志可确认「变色占位卡」出现的确切路径。
+            TavernRuntimeManager.appendLog("debug", "[panel] onDispose release key=$panelKey")
             TavernPanelLoadScheduler.cancel(panelKey)
             ActivePanelWebViewPool.release(panelKey)
         }
